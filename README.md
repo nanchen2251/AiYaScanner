@@ -7,6 +7,10 @@ TODO：
 3. 加入 zbar 解码；
 4. 兼容优化；
 
+**更多有效的优化，请大家一起来提 PR！**
+**有任何需求或者 BUG,请提 issues！**
+
+
 ## 效果图<br>
 **后期给出**
 
@@ -16,6 +20,7 @@ TODO：
 
 ## 特点
   1、只为极速扫码而生。<br>
+  2、默认只支持二维码扫描。<br>
 ## 使用方法
 #### 1、添加依赖<br>
 ##### Step 1. Add it in your root build.gradle at the end of repositories:
@@ -30,7 +35,7 @@ allprojects {
 ##### Step 2. Add the dependency
 ```java
 dependencies {
-	        implementation 'com.github.nanchen2251:AiYaScanner:1.0.1'
+	        implementation 'com.github.nanchen2251:AiYaScanner:1.0.3'
 	}
 ```
 #### 2、在Activity里面使用<br>
