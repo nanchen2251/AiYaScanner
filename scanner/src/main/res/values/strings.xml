@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">scanner</string>
+    <string name="scan_qr_desc">将二维码放入框内，即可自动扫描</string>
+    <string name="scan_qr_torch">手电筒</string>
+    <string name="scanner">扫一扫</string>
+    <string name="gallery">相册</string>
+
+    <string name="msg_camera_framework_bug">很抱歉，Android 相机出现问题。你可能需要重启设备。</string>
+    <string name="common_ok">确定</string>
+</resources>
