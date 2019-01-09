@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
-import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
@@ -132,7 +131,6 @@ public class CaptureActivity extends BaseCaptureActivity implements View.OnClick
 
         } else if (i == R.id.tvGallery) {
             openGallery();
-
         }
     }
 
@@ -217,10 +215,14 @@ public class CaptureActivity extends BaseCaptureActivity implements View.OnClick
     }
 
     private void doParseResult(String result) {
-        Intent data = new Intent();
-        data.putExtra("result", result);
-        setResult(RESULT_OK, data);
-        finish();
+        if (result == null || TextUtils.isEmpty(result)) {
+            restartPreviewAfterDelay(0);
+        } else {
+            Intent data = new Intent();
+            data.putExtra("result", result);
+            setResult(RESULT_OK, data);
+            finish();
+        }
     }
 
     @Override
@@ -431,5 +433,15 @@ public class CaptureActivity extends BaseCaptureActivity implements View.OnClick
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    /**
+     * 重新扫描
+     */
+    public void restartPreviewAfterDelay(long delayMS) {
+        if (handler != null) {
+            handler.sendEmptyMessageDelayed(R.id.restart_preview, delayMS);
+        }
+        resetStatusView();
     }
 }
