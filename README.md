@@ -16,6 +16,7 @@ TODO：
 
 ## 特点
   1、只为极速扫码而生。<br>
+  2、默认只支持二维码扫描。<br>
 ## 使用方法
 #### 1、添加依赖<br>
 ##### Step 1. Add it in your root build.gradle at the end of repositories:
