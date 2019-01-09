@@ -3,7 +3,7 @@
 
 TODO：
 1. 剥离 zxing（已完成）；
-2. 优化 zxing 预览；
+2. 优化 zxing 预览和解码（部分完成）；
 3. 加入 zbar 解码；
 4. 兼容优化；
 
@@ -15,7 +15,7 @@ TODO：
 #### ⊙交流群（拒绝无脑问）：118116509 <a target="_blank" href="//shang.qq.com/wpa/qunwpa?idkey=e6ad4af66393684e1d0c9441403b049d2d5670ec0ce9f72150e694cbb7c16b0a"><img border="0" src="http://pub.idqqimg.com/wpa/images/group.png" alt="Android神技侧漏交流群" title="Android神技侧漏交流群"></a>( 点击图标即可加入 )<br>
 
 ## 特点
-  1、支持压缩单张图片和多张图片<br>
+  1、只为极速扫码而生。<br>
 ## 使用方法
 #### 1、添加依赖<br>
 ##### Step 1. Add it in your root build.gradle at the end of repositories:
