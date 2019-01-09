@@ -1,6 +1,5 @@
 package com.nanchen.aiyascanner;
 
-import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.support.annotation.Nullable;
@@ -10,9 +9,7 @@ import android.view.View;
 import android.widget.Toast;
 
 import com.nanchen.scanner.module.CaptureActivity;
-import com.tbruyelle.rxpermissions2.RxPermissions;
 
-import io.reactivex.functions.Consumer;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -25,19 +22,7 @@ public class MainActivity extends AppCompatActivity {
             @SuppressLint("CheckResult")
             @Override
             public void onClick(View v) {
-                new RxPermissions(MainActivity.this).request(Manifest.permission.CAMERA)
-                        .subscribe(new Consumer<Boolean>() {
-                            @Override
-                            public void accept(Boolean aBoolean) throws Exception {
-                                if (aBoolean) {
-                                    CaptureActivity.startForResult(MainActivity.this, 1024);
-                                } else {
-                                    Toast.makeText(getApplicationContext(), "请先打开相机权限", Toast.LENGTH_SHORT).show();
-                                }
-                            }
-                        });
-
-
+                CaptureActivity.startForResult(MainActivity.this, 1024);
             }
         });
     }

@@ -4,10 +4,17 @@ import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
+import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Handler;
 import android.os.Bundle;
+import android.provider.MediaStore;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.Surface;
 import android.view.SurfaceHolder;
@@ -15,12 +22,17 @@ import android.view.SurfaceView;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.DecodeHintType;
 import com.google.zxing.Result;
 import com.nanchen.scanner.R;
+import com.nanchen.scanner.utils.PermissionConstants;
+import com.nanchen.scanner.utils.PermissionUtils;
+import com.nanchen.scanner.utils.QRUtils;
 import com.nanchen.scanner.zxing.BaseCaptureActivity;
 import com.nanchen.scanner.zxing.BeepManager;
 import com.nanchen.scanner.zxing.CaptureActivityHandler;
@@ -32,8 +44,10 @@ import com.nanchen.scanner.zxing.Intents;
 import com.nanchen.scanner.zxing.ViewfinderView;
 import com.nanchen.scanner.zxing.camera.CameraManager;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -50,15 +64,37 @@ public class CaptureActivity extends BaseCaptureActivity implements View.OnClick
     private InactivityTimer inactivityTimer;
     private BeepManager beepManager;
 
+    private static final int REQUEST_IMAGE_GET = 1001;
+
     private Collection<BarcodeFormat> decodeFormats;
     private Map<DecodeHintType, ?> decodeHints;
     private String characterSet;
     private boolean torchOpen = false;
     private TextView tvTitle;
 
-    public static void startForResult(Activity activity, int requestCode) {
-        Intent intent = new Intent(activity, CaptureActivity.class);
-        activity.startActivityForResult(intent, requestCode);
+    public static void startForResult(final Activity activity, final int requestCode) {
+        PermissionUtils.permission(activity, PermissionConstants.CAMERA, PermissionConstants.STORAGE)
+                .rationale(new PermissionUtils.OnRationaleListener() {
+                    @Override
+                    public void rationale(final ShouldRequest shouldRequest) {
+                        shouldRequest.again(true);
+                    }
+                })
+                .callback(new PermissionUtils.FullCallback() {
+                    @Override
+                    public void onGranted(List<String> permissionsGranted) {
+                        Intent intent = new Intent(activity.getApplicationContext(), CaptureActivity.class);
+                        activity.startActivityForResult(intent, requestCode);
+                    }
+
+                    @Override
+                    public void onDenied(List<String> permissionsDeniedForever,
+                                         List<String> permissionsDenied) {
+                        Toast.makeText(activity.getApplicationContext(), "摄像头权限被拒绝！", Toast.LENGTH_SHORT).show();
+
+                    }
+                }).request();
+
     }
 
     @Override
@@ -101,7 +137,10 @@ public class CaptureActivity extends BaseCaptureActivity implements View.OnClick
     }
 
     private void openGallery() {
-
+        Intent intentToPickPic = new Intent(Intent.ACTION_PICK, null);
+        // 如果限制上传到服务器的图片类型时可以直接写如："image/jpeg 、 image/png等的类型" 所有类型则写 "image/*"
+        intentToPickPic.setDataAndType(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, "image/jpeg");
+        startActivityForResult(intentToPickPic, REQUEST_IMAGE_GET);
     }
 
     private void initCamera(SurfaceHolder surfaceHolder) {
@@ -174,8 +213,12 @@ public class CaptureActivity extends BaseCaptureActivity implements View.OnClick
             // Then not from history, so beep/vibrate and we have an image to draw on
             beepManager.playBeepSoundAndVibrate();
         }
+        doParseResult(rawResult.getText());
+    }
+
+    private void doParseResult(String result) {
         Intent data = new Intent();
-        data.putExtra("result", rawResult.getText());
+        data.putExtra("result", result);
         setResult(RESULT_OK, data);
         finish();
     }
@@ -263,7 +306,9 @@ public class CaptureActivity extends BaseCaptureActivity implements View.OnClick
             if (Intents.Scan.ACTION.equals(action)) {
 
                 // Scan the formats the intent requested, and return the result to the calling activity.
-                decodeFormats = DecodeFormatManager.parseDecodeFormats(intent);
+//                decodeFormats = DecodeFormatManager.parseDecodeFormats(intent);
+                // 仅仅支持二维码
+                decodeFormats = DecodeFormatManager.onlyQrCode();
                 decodeHints = DecodeHintManager.parseDecodeHints(intent);
 
                 if (intent.hasExtra(Intents.Scan.WIDTH) && intent.hasExtra(Intents.Scan.HEIGHT)) {
@@ -320,5 +365,71 @@ public class CaptureActivity extends BaseCaptureActivity implements View.OnClick
     protected void onDestroy() {
         inactivityTimer.shutdown();
         super.onDestroy();
+    }
+
+    Bitmap bitmap;
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == REQUEST_IMAGE_GET && resultCode == RESULT_OK && data.getData() != null) {
+            Uri uri = data.getData();
+            bitmap = null;
+            try {
+                bitmap = BitmapFactory.decodeStream(getContentResolver().openInputStream(uri));
+            } catch (FileNotFoundException e) {
+                bitmap = null;
+            }
+            if (bitmap == null) {
+                Toast.makeText(getApplicationContext(), "获取图片失败", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            showProgressDialog("请稍后...");
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    final String result = QRUtils.getInstance().decodeQRcodeByZxing(bitmap);
+                    if (!TextUtils.isEmpty(result)) {
+                        closeProgressDialog();
+                        doParseResult(result);
+                    } else {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                Toast.makeText(CaptureActivity.this.getApplicationContext(), "识别失败！", Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                        closeProgressDialog();
+                    }
+                }
+            }).start();
+        }
+    }
+
+    private AlertDialog progressDialog;
+
+    public void showProgressDialog(String msg) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this, R.style.AlertDialogStyle);
+        builder.setCancelable(false);
+        View view = View.inflate(this, R.layout.dialog_loading, null);
+        builder.setView(view);
+        ProgressBar pb_loading = view.findViewById(R.id.pb_loading);
+        TextView tv_hint = view.findViewById(R.id.tv_hint);
+        tv_hint.setText(msg);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            pb_loading.setIndeterminateTintList(ContextCompat.getColorStateList(this, R.color.dialog_pro_color));
+        }
+        progressDialog = builder.create();
+        progressDialog.show();
+    }
+
+    public void closeProgressDialog() {
+        try {
+            if (progressDialog != null) {
+                progressDialog.dismiss();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }
