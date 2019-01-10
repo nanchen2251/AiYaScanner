@@ -27,7 +27,12 @@ import com.google.zxing.Result;
 import com.google.zxing.common.GlobalHistogramBinarizer;
 import com.google.zxing.common.HybridBinarizer;
 import com.nanchen.scanner.R;
+import com.yanzhenjie.zbar.Image;
+import com.yanzhenjie.zbar.ImageScanner;
+import com.yanzhenjie.zbar.Symbol;
+import com.yanzhenjie.zbar.SymbolSet;
 
+import android.graphics.Rect;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -65,7 +70,6 @@ final class DecodeHandler extends Handler {
 
         }
     }
-
     /**
      * Decode the data within the viewfinder rectangle, and time how long it took. For efficiency,
      * reuse the same reader objects from one decode to the next.
@@ -77,12 +81,34 @@ final class DecodeHandler extends Handler {
     private void decode(byte[] data, int width, int height) {
         long start = System.currentTimeMillis();
         Result rawResult = null;
-        PlanarYUVLuminanceSource source = activity.getCameraManager().buildLuminanceSource(data, width, height);
 
+        String strResult = null;
+
+
+        // zbar 解码
+        Image barcode = new Image(width, height, "Y800");
+        barcode.setData(data);
+        Rect rect = activity.getCameraManager().getFramingRectInPreview();
+        if (rect != null) {
+            /* zbar 解码库,不需要将数据进行旋转,因此设置裁剪区域是的x为 top, y为left 设置了裁剪区域,解码速度快了近5倍左右 */
+            barcode.setCrop(rect.top, rect.left, rect.width(), rect.height()); // 设置截取区域，也就是你的扫描框在图片上的区域.
+        }
+        ImageScanner mImageScanner = new ImageScanner();
+        int result = mImageScanner.scanImage(barcode);
+        if (result != 0) {
+            SymbolSet symSet = mImageScanner.getResults();
+            for (Symbol sym : symSet)
+                strResult = sym.getData();
+        }
+
+        // zxing
+        PlanarYUVLuminanceSource source = activity.getCameraManager().buildLuminanceSource(data, width, height);
         if (source != null) {
             BinaryBitmap bitmap = new BinaryBitmap(new GlobalHistogramBinarizer(source));
             try {
                 rawResult = multiFormatReader.decodeWithState(bitmap);
+                if (rawResult != null)
+                    strResult = rawResult.getText();
             } catch (ReaderException re) {
                 // continue
             } finally {
@@ -93,6 +119,8 @@ final class DecodeHandler extends Handler {
             BinaryBitmap bitmap = new BinaryBitmap(new HybridBinarizer(source));
             try {
                 rawResult = multiFormatReader.decodeWithState(bitmap);
+                if (rawResult != null)
+                    strResult = rawResult.getText();
             } catch (ReaderException re) {
                 // continue
             } finally {
@@ -101,15 +129,17 @@ final class DecodeHandler extends Handler {
         }
 
         Handler handler = activity.getHandler();
-        if (rawResult != null) {
+        if (strResult != null) {
             // Don't log the barcode contents for security.
             long end = System.currentTimeMillis();
             Log.d(TAG, "Found barcode in " + (end - start) + " ms");
             if (handler != null) {
-                Message message = Message.obtain(handler, R.id.decode_succeeded, rawResult);
-                Bundle bundle = new Bundle();
-                bundleThumbnail(source, bundle);
-                message.setData(bundle);
+                Message message = Message.obtain(handler, R.id.decode_succeeded, strResult);
+                if (rawResult != null) {
+                    Bundle bundle = new Bundle();
+                    bundleThumbnail(source, bundle);
+                    message.setData(bundle);
+                }
                 message.sendToTarget();
             }
         } else {
@@ -119,6 +149,7 @@ final class DecodeHandler extends Handler {
             }
         }
     }
+
 
     private static void bundleThumbnail(PlanarYUVLuminanceSource source, Bundle bundle) {
         int[] pixels = source.renderThumbnail();

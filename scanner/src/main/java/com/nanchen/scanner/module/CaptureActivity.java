@@ -203,7 +203,7 @@ public class CaptureActivity extends BaseCaptureActivity implements View.OnClick
     }
 
     @Override
-    public void handleDecode(Result rawResult, Bitmap barcode, float scaleFactor) {
+    public void handleDecode(String result, Bitmap barcode, float scaleFactor) {
         inactivityTimer.onActivity();
 
         boolean fromLiveScan = barcode != null;
@@ -211,7 +211,7 @@ public class CaptureActivity extends BaseCaptureActivity implements View.OnClick
             // Then not from history, so beep/vibrate and we have an image to draw on
             beepManager.playBeepSoundAndVibrate();
         }
-        doParseResult(rawResult.getText());
+        doParseResult(result);
     }
 
     private void doParseResult(String result) {

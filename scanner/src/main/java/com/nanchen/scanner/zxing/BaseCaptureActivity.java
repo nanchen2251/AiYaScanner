@@ -40,7 +40,7 @@ public abstract class BaseCaptureActivity extends Activity implements SurfaceHol
 
     public abstract CameraManager getCameraManager();
 
-    public abstract void handleDecode(Result rawResult, Bitmap barcode, float scaleFactor);
+    public abstract void handleDecode(String result, Bitmap barcode, float scaleFactor);
 
     public abstract void drawViewfinder();
 }
