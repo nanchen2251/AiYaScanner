@@ -70,6 +70,7 @@ final class DecodeHandler extends Handler {
 
         }
     }
+
     /**
      * Decode the data within the viewfinder rectangle, and time how long it took. For efficiency,
      * reuse the same reader objects from one decode to the next.
@@ -83,23 +84,6 @@ final class DecodeHandler extends Handler {
         Result rawResult = null;
 
         String strResult = null;
-
-
-        // zbar 解码
-        Image barcode = new Image(width, height, "Y800");
-        barcode.setData(data);
-        Rect rect = activity.getCameraManager().getFramingRectInPreview();
-        if (rect != null) {
-            /* zbar 解码库,不需要将数据进行旋转,因此设置裁剪区域是的x为 top, y为left 设置了裁剪区域,解码速度快了近5倍左右 */
-            barcode.setCrop(rect.top, rect.left, rect.width(), rect.height()); // 设置截取区域，也就是你的扫描框在图片上的区域.
-        }
-        ImageScanner mImageScanner = new ImageScanner();
-        int result = mImageScanner.scanImage(barcode);
-        if (result != 0) {
-            SymbolSet symSet = mImageScanner.getResults();
-            for (Symbol sym : symSet)
-                strResult = sym.getData();
-        }
 
         // zxing
         PlanarYUVLuminanceSource source = activity.getCameraManager().buildLuminanceSource(data, width, height);
@@ -126,6 +110,22 @@ final class DecodeHandler extends Handler {
             } finally {
                 multiFormatReader.reset();
             }
+        }
+
+        // zbar 解码
+        Image barcode = new Image(width, height, "Y800");
+        barcode.setData(data);
+        Rect rect = activity.getCameraManager().getFramingRectInPreview();
+        if (rect != null) {
+            /* zbar 解码库,不需要将数据进行旋转,因此设置裁剪区域是的x为 top, y为left 设置了裁剪区域,解码速度快了近5倍左右 */
+            barcode.setCrop(rect.top, rect.left, rect.width(), rect.height()); // 设置截取区域，也就是你的扫描框在图片上的区域.
+        }
+        ImageScanner mImageScanner = new ImageScanner();
+        int result = mImageScanner.scanImage(barcode);
+        if (result != 0) {
+            SymbolSet symSet = mImageScanner.getResults();
+            for (Symbol sym : symSet)
+                strResult = sym.getData();
         }
 
         Handler handler = activity.getHandler();
