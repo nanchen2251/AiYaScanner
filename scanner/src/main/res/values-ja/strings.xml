@@ -1,0 +1,14 @@
+<resources>
+    <string name="app_name">scanner</string>
+    <string name="scan_qr_desc">箱にQRコードを入れれば自動的にそれをスキャンすることができます</string>
+    <string name="scan_qr_torch">懐中電灯</string>
+    <string name="scanner">スイープ</string>
+    <string name="gallery">アルバム</string>
+
+    <string name="msg_camera_framework_bug">申し訳ありませんが、Androidカメラに問題があります。 デバイスを再起動する必要があります。</string>
+    <string name="common_ok">決定する</string>
+    <string name="scanner_camera_refuse">カメラの許可が拒否されました</string>
+    <string name="scanner_get_picture_error">写真を取得できませんでした。</string>
+    <string name="scanner_waiting">お待ちください...</string>
+    <string name="scanner_failed">識別に失敗しました。</string>
+</resources>

@@ -7,4 +7,8 @@
 
     <string name="msg_camera_framework_bug">很抱歉，Android 相机出现问题。你可能需要重启设备。</string>
     <string name="common_ok">确定</string>
+    <string name="scanner_camera_refuse">摄像头权限被拒绝！</string>
+    <string name="scanner_get_picture_error">获取图片失败！</string>
+    <string name="scanner_waiting">请稍后...</string>
+    <string name="scanner_failed">识别失败！</string>
 </resources>

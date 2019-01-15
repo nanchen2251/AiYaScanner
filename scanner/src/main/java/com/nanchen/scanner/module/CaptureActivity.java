@@ -89,7 +89,7 @@ public class CaptureActivity extends BaseCaptureActivity implements View.OnClick
                     @Override
                     public void onDenied(List<String> permissionsDeniedForever,
                                          List<String> permissionsDenied) {
-                        Toast.makeText(activity.getApplicationContext(), "摄像头权限被拒绝！", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(activity.getApplicationContext(), activity.getResources().getString(R.string.scanner_camera_refuse), Toast.LENGTH_SHORT).show();
 
                     }
                 }).request();
@@ -383,10 +383,10 @@ public class CaptureActivity extends BaseCaptureActivity implements View.OnClick
                 bitmap = null;
             }
             if (bitmap == null) {
-                Toast.makeText(getApplicationContext(), "获取图片失败", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getApplicationContext(), getResources().getString(R.string.scanner_get_picture_error), Toast.LENGTH_SHORT).show();
                 return;
             }
-            showProgressDialog("请稍后...");
+            showProgressDialog(getResources().getString(R.string.scanner_waiting));
             new Thread(new Runnable() {
                 @Override
                 public void run() {
@@ -398,7 +398,7 @@ public class CaptureActivity extends BaseCaptureActivity implements View.OnClick
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
-                                Toast.makeText(CaptureActivity.this.getApplicationContext(), "识别失败！", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(CaptureActivity.this.getApplicationContext(), getResources().getString(R.string.scanner_failed), Toast.LENGTH_SHORT).show();
                             }
                         });
                         closeProgressDialog();
