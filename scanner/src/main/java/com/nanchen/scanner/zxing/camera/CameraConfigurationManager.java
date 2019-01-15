@@ -126,6 +126,7 @@ final class CameraConfigurationManager {
         Point theScreenResolution = new Point();
         display.getSize(theScreenResolution);
         screenResolution = theScreenResolution;
+
         Log.i(TAG, "Screen resolution in current orientation: " + screenResolution);
         cameraResolution = CameraConfigurationUtils.findBestPreviewSizeValue(parameters, screenResolution);
         Log.i(TAG, "Camera resolution: " + cameraResolution);
@@ -154,14 +155,6 @@ final class CameraConfigurationManager {
             return;
         }
 
-        // 设置合适的最佳预览尺寸/图片尺寸
-        DisplayMetrics displayMetrics = new DisplayMetrics();
-        Camera.Size mCameraResolution = findCloselySize(displayMetrics.widthPixels, displayMetrics.heightPixels,
-                parameters.getSupportedPreviewSizes());
-        Camera.Size pictureSize = findCloselySize(displayMetrics.widthPixels, displayMetrics.heightPixels,
-                parameters.getSupportedPictureSizes());
-        parameters.setPreviewSize(mCameraResolution.width, mCameraResolution.height);
-        parameters.setPictureSize(pictureSize.width, pictureSize.height);
         setZoom(parameters);
 
         Log.i(TAG, "Initial camera parameters: " + parameters.flatten());
@@ -202,6 +195,15 @@ final class CameraConfigurationManager {
 //        }
 
         parameters.setPreviewSize(bestPreviewSize.x, bestPreviewSize.y);
+
+        // 设置合适的最佳预览尺寸/图片尺寸
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        Camera.Size mCameraResolution = findCloselySize(displayMetrics.widthPixels, displayMetrics.heightPixels,
+                parameters.getSupportedPreviewSizes());
+        Camera.Size pictureSize = findCloselySize(displayMetrics.widthPixels, displayMetrics.heightPixels,
+                parameters.getSupportedPictureSizes());
+//        parameters.setPreviewSize(mCameraResolution.width, mCameraResolution.height);
+        parameters.setPictureSize(pictureSize.width, pictureSize.height);
 
         theCamera.setParameters(parameters);
 
