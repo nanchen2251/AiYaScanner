@@ -40,6 +40,7 @@ import android.os.Message;
 import android.util.Log;
 
 import java.io.ByteArrayOutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 final class DecodeHandler extends Handler {
@@ -124,8 +125,17 @@ final class DecodeHandler extends Handler {
         int result = mImageScanner.scanImage(barcode);
         if (result != 0) {
             SymbolSet symSet = mImageScanner.getResults();
-            for (Symbol sym : symSet)
-                strResult = sym.getData();
+            for (Symbol sym : symSet) {
+                // 未能识别的格式继续遍历
+                if (sym.getType() == Symbol.NONE) {
+                    continue;
+                }
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.KITKAT) {
+                    strResult = new String(sym.getDataBytes(), StandardCharsets.UTF_8);
+                } else {
+                    strResult = sym.getData();
+                }
+            }
         }
 
         Handler handler = activity.getHandler();

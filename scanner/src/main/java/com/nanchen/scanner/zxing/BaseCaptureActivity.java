@@ -16,7 +16,6 @@
 
 package com.nanchen.scanner.zxing;
 
-import com.google.zxing.Result;
 import com.nanchen.scanner.zxing.camera.CameraManager;
 
 import android.app.Activity;

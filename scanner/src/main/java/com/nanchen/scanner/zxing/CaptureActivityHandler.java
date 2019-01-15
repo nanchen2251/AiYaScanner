@@ -24,7 +24,6 @@ import android.provider.Browser;
 
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.DecodeHintType;
-import com.google.zxing.Result;
 import com.nanchen.scanner.R;
 import com.nanchen.scanner.zxing.camera.CameraManager;
 
@@ -81,7 +80,6 @@ public final class CaptureActivityHandler extends Handler {
     public void handleMessage(Message message) {
         if (message.what == R.id.restart_preview) {
             restartPreviewAndDecode();
-
         } else if (message.what == R.id.decode_succeeded) {
             state = State.SUCCESS;
             Bundle bundle = message.getData();
@@ -101,7 +99,6 @@ public final class CaptureActivityHandler extends Handler {
         } else if (message.what == R.id.decode_failed) {// We're decoding as fast as possible, so when one decode fails, start another.
             state = State.PREVIEW;
             cameraManager.requestPreviewFrame(decodeThread.getHandler(), R.id.decode);
-
         } else if (message.what == R.id.return_scan_result) {
             activity.setResult(Activity.RESULT_OK, (Intent) message.obj);
             activity.finish();
