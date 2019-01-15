@@ -56,6 +56,7 @@ dependencies {
 #### 3、你也可以自己编写你的扫一扫 UI
 ```
 // Activity 请继承于 BaseCaptureActivity
+// 你也可以不继承，但记得编写相关方法
 ```
 
 该项目参考了：
