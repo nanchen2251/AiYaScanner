@@ -65,9 +65,6 @@ public class CaptureActivity extends BaseCaptureActivity implements View.OnClick
 
     private static final int REQUEST_IMAGE_GET = 1001;
 
-    private Collection<BarcodeFormat> decodeFormats;
-    private Map<DecodeHintType, ?> decodeHints;
-    private String characterSet;
     private boolean torchOpen = false;
     private TextView tvTitle;
 
@@ -153,7 +150,7 @@ public class CaptureActivity extends BaseCaptureActivity implements View.OnClick
             cameraManager.openDriver(surfaceHolder);
             // Creating the handler starts the preview, which can also throw a RuntimeException.
             if (handler == null) {
-                handler = new CaptureActivityHandler(this, decodeFormats, decodeHints, characterSet, cameraManager);
+                handler = new CaptureActivityHandler(this, cameraManager);
             }
         } catch (IOException ioe) {
             Log.w(TAG, ioe);
@@ -299,9 +296,6 @@ public class CaptureActivity extends BaseCaptureActivity implements View.OnClick
 
         Intent intent = getIntent();
 
-        decodeFormats = null;
-        characterSet = null;
-
         if (intent != null) {
             String action = intent.getAction();
 
@@ -310,8 +304,8 @@ public class CaptureActivity extends BaseCaptureActivity implements View.OnClick
                 // Scan the formats the intent requested, and return the result to the calling activity.
 //                decodeFormats = DecodeFormatManager.parseDecodeFormats(intent);
                 // 仅仅支持二维码
-                decodeFormats = DecodeFormatManager.onlyQrCode();
-                decodeHints = DecodeHintManager.parseDecodeHints(intent);
+//                decodeFormats = DecodeFormatManager.onlyQrCode();
+//                decodeHints = DecodeHintManager.parseDecodeHints(intent);
 
                 if (intent.hasExtra(Intents.Scan.WIDTH) && intent.hasExtra(Intents.Scan.HEIGHT)) {
                     int width = intent.getIntExtra(Intents.Scan.WIDTH, 0);
@@ -328,9 +322,6 @@ public class CaptureActivity extends BaseCaptureActivity implements View.OnClick
                     }
                 }
             }
-
-            characterSet = intent.getStringExtra(Intents.Scan.CHARACTER_SET);
-
         }
 
         SurfaceHolder surfaceHolder = surfaceView.getHolder();

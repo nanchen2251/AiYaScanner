@@ -20,12 +20,12 @@ import android.graphics.Bitmap;
 
 import com.google.zxing.BinaryBitmap;
 import com.google.zxing.DecodeHintType;
-import com.google.zxing.MultiFormatReader;
 import com.google.zxing.PlanarYUVLuminanceSource;
 import com.google.zxing.ReaderException;
 import com.google.zxing.Result;
 import com.google.zxing.common.GlobalHistogramBinarizer;
 import com.google.zxing.common.HybridBinarizer;
+import com.google.zxing.qrcode.QRCodeReader;
 import com.nanchen.scanner.R;
 import com.yanzhenjie.zbar.Image;
 import com.yanzhenjie.zbar.ImageScanner;
@@ -48,12 +48,13 @@ final class DecodeHandler extends Handler {
     private static final String TAG = DecodeHandler.class.getSimpleName();
 
     private final BaseCaptureActivity activity;
-    private final MultiFormatReader multiFormatReader;
+    private QRCodeReader qrCodeReader;
     private boolean running = true;
+    private Map<DecodeHintType, Object> hints;
 
     DecodeHandler(BaseCaptureActivity activity, Map<DecodeHintType, Object> hints) {
-        multiFormatReader = new MultiFormatReader();
-        multiFormatReader.setHints(hints);
+        qrCodeReader = new QRCodeReader();
+        this.hints = hints;
         this.activity = activity;
     }
 
@@ -88,29 +89,25 @@ final class DecodeHandler extends Handler {
 
         // zxing
         PlanarYUVLuminanceSource source = activity.getCameraManager().buildLuminanceSource(data, width, height);
-        if (source != null) {
-            BinaryBitmap bitmap = new BinaryBitmap(new GlobalHistogramBinarizer(source));
-            try {
-                rawResult = multiFormatReader.decodeWithState(bitmap);
-                if (rawResult != null)
-                    strResult = rawResult.getText();
-            } catch (ReaderException re) {
-                // continue
-            } finally {
-                multiFormatReader.reset();
-            }
+        BinaryBitmap globalBitmap = new BinaryBitmap(new GlobalHistogramBinarizer(source));
+        try {
+            rawResult = qrCodeReader.decode(globalBitmap, hints);
+            if (rawResult != null)
+                strResult = rawResult.getText();
+        } catch (ReaderException re) {
+            // continue
+        } finally {
+            qrCodeReader.reset();
         }
-        if (source != null) {
-            BinaryBitmap bitmap = new BinaryBitmap(new HybridBinarizer(source));
-            try {
-                rawResult = multiFormatReader.decodeWithState(bitmap);
-                if (rawResult != null)
-                    strResult = rawResult.getText();
-            } catch (ReaderException re) {
-                // continue
-            } finally {
-                multiFormatReader.reset();
-            }
+        BinaryBitmap bitmap = new BinaryBitmap(new HybridBinarizer(source));
+        try {
+            rawResult = qrCodeReader.decode(bitmap, hints);
+            if (rawResult != null)
+                strResult = rawResult.getText();
+        } catch (ReaderException re) {
+            // continue
+        } finally {
+            qrCodeReader.reset();
         }
 
         // zbar 解码
