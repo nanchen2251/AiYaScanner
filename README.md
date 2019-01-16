@@ -13,7 +13,7 @@ TODO：
 
 
 ## 效果图<br>
-**后期给出**
+![](https://github.com/nanchen2251/AiYaScanner/blob/master/screenshot/screenshot.gif)
 
 #### ⊙开源不易，希望给个 star 或者 fork 奖励
 #### ⊙拥抱开源：https://github.com/nanchen2251/
