@@ -6,6 +6,7 @@ import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.hardware.Camera;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Handler;
@@ -15,6 +16,8 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.GestureDetector;
+import android.view.MotionEvent;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -25,9 +28,6 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.zxing.BarcodeFormat;
-import com.google.zxing.DecodeHintType;
-import com.google.zxing.Result;
 import com.nanchen.scanner.R;
 import com.nanchen.scanner.utils.PermissionConstants;
 import com.nanchen.scanner.utils.PermissionUtils;
@@ -35,8 +35,6 @@ import com.nanchen.scanner.utils.QRUtils;
 import com.nanchen.scanner.zxing.BaseCaptureActivity;
 import com.nanchen.scanner.zxing.BeepManager;
 import com.nanchen.scanner.zxing.CaptureActivityHandler;
-import com.nanchen.scanner.zxing.DecodeFormatManager;
-import com.nanchen.scanner.zxing.DecodeHintManager;
 import com.nanchen.scanner.zxing.FinishListener;
 import com.nanchen.scanner.zxing.InactivityTimer;
 import com.nanchen.scanner.zxing.Intents;
@@ -45,9 +43,7 @@ import com.nanchen.scanner.zxing.camera.CameraManager;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 
 /**
  * @author nanchen
@@ -67,6 +63,7 @@ public class CaptureActivity extends BaseCaptureActivity implements View.OnClick
 
     private boolean torchOpen = false;
     private TextView tvTitle;
+    private GestureDetector gestureDetector;
 
     public static void startForResult(final Activity activity, final int requestCode) {
         PermissionUtils.permission(activity, PermissionConstants.CAMERA, PermissionConstants.STORAGE)
@@ -115,6 +112,15 @@ public class CaptureActivity extends BaseCaptureActivity implements View.OnClick
         hasSurface = false;
         inactivityTimer = new InactivityTimer(this);
         beepManager = new BeepManager(this);
+
+        gestureDetector = new GestureDetector(this, new GestureDetector.SimpleOnGestureListener() {
+            @Override
+            public boolean onDoubleTap(MotionEvent e) {
+                Log.d(TAG, "双击放大");
+                cameraManager.handleDoubleZoom();
+                return true;
+            }
+        });
     }
 
     @Override
@@ -435,4 +441,45 @@ public class CaptureActivity extends BaseCaptureActivity implements View.OnClick
         }
         resetStatusView();
     }
+
+    /**
+     * 计算手指间距
+     */
+    private float calculateFingerSpacing(MotionEvent event) {
+        float x = event.getX(0) - event.getX(1);
+        float y = event.getY(0) - event.getY(1);
+        return (float) Math.sqrt(x * x + y * y);
+    }
+
+    private float mOldDist = 1f;
+
+    private boolean isPreviewing() {
+        return cameraManager.isPreviewing() && hasSurface;
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        if (!isPreviewing()) {
+            return super.onTouchEvent(event);
+        }
+        gestureDetector.onTouchEvent(event);
+        int pointCount = event.getPointerCount();
+        if (pointCount >= 2) {
+            switch (event.getAction() & MotionEvent.ACTION_MASK) {
+                case MotionEvent.ACTION_POINTER_DOWN:
+                    mOldDist = calculateFingerSpacing(event);
+                    break;
+                case MotionEvent.ACTION_MOVE:
+                    float newDist = calculateFingerSpacing(event);
+                    if (newDist > mOldDist) {
+                        cameraManager.handleZoom(true);
+                    } else if (newDist < mOldDist) {
+                        cameraManager.handleZoom(false);
+                    }
+                    break;
+            }
+        }
+        return true;
+    }
+
 }

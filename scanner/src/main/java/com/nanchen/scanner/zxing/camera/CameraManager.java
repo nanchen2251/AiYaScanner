@@ -331,4 +331,54 @@ public final class CameraManager {
 //                rect.width(), rect.height(), false);
     }
 
+
+    public void handleZoom(boolean isZoomIn) {
+        Camera theCamera = camera.getCamera();
+        if (theCamera != null && previewing) {
+            Camera.Parameters params = theCamera.getParameters();
+            if (params != null && params.isZoomSupported()) {
+                int zoom = params.getZoom();
+                if (isZoomIn && zoom < params.getMaxZoom()) {
+                    Log.d(TAG, "放大");
+                    zoom++;
+                } else if (!isZoomIn && zoom > 0) {
+                    Log.d(TAG, "缩小");
+                    zoom--;
+                }
+                params.setZoom(zoom);
+                theCamera.setParameters(params);
+            } else {
+                Log.d(TAG, "不支持缩放");
+            }
+        } else {
+            Log.d(TAG, "camera is not previewing.");
+        }
+    }
+
+
+    public void handleDoubleZoom() {
+        Camera theCamera = camera.getCamera();
+        if (theCamera != null && previewing) {
+            Camera.Parameters params = theCamera.getParameters();
+            if (params != null && params.isZoomSupported()) {
+                int curZoom = params.getZoom();
+                int maxZoom = params.getMaxZoom();
+                if (curZoom >= maxZoom / 2) {
+                    params.setZoom(0);
+                } else if (curZoom < maxZoom / 2) {
+                    params.setZoom(maxZoom / 2);
+                }
+                theCamera.setParameters(params);
+            } else {
+                Log.d(TAG, "不支持缩放");
+            }
+        } else {
+            Log.d(TAG, "camera is not previewing.");
+        }
+    }
+
+
+    public boolean isPreviewing() {
+        return previewing;
+    }
 }
