@@ -18,11 +18,13 @@ package com.nanchen.scanner.zxing;
 
 import android.graphics.Bitmap;
 
+import com.google.zxing.BarcodeFormat;
 import com.google.zxing.BinaryBitmap;
 import com.google.zxing.DecodeHintType;
 import com.google.zxing.PlanarYUVLuminanceSource;
 import com.google.zxing.ReaderException;
 import com.google.zxing.Result;
+import com.google.zxing.ResultPoint;
 import com.google.zxing.common.GlobalHistogramBinarizer;
 import com.google.zxing.common.HybridBinarizer;
 import com.google.zxing.qrcode.QRCodeReader;
@@ -41,6 +43,7 @@ import android.util.Log;
 
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 import java.util.Map;
 
 final class DecodeHandler extends Handler {
@@ -49,13 +52,13 @@ final class DecodeHandler extends Handler {
 
     private final BaseCaptureActivity activity;
     private QRCodeReader qrCodeReader;
+    private ViewfinderResultPointCallback callback;
     private boolean running = true;
-    private Map<DecodeHintType, Object> hints;
 
-    DecodeHandler(BaseCaptureActivity activity, Map<DecodeHintType, Object> hints) {
+    DecodeHandler(BaseCaptureActivity activity) {
         qrCodeReader = new QRCodeReader();
-        this.hints = hints;
         this.activity = activity;
+        this.callback = new ViewfinderResultPointCallback(activity.getViewfinderView());
     }
 
     @Override
@@ -82,6 +85,12 @@ final class DecodeHandler extends Handler {
      * @param height The height of the preview frame.
      */
     private void decode(byte[] data, int width, int height) {
+        Map<DecodeHintType, Object> hints = new HashMap<>();
+        hints.put(DecodeHintType.POSSIBLE_FORMATS, BarcodeFormat.QR_CODE);
+        hints.put(DecodeHintType.CHARACTER_SET, "utf-8");
+        hints.put(DecodeHintType.TRY_HARDER, Boolean.TRUE);
+        hints.put(DecodeHintType.NEED_RESULT_POINT_CALLBACK, callback);
+
         long start = System.currentTimeMillis();
         Result rawResult = null;
 
@@ -89,6 +98,7 @@ final class DecodeHandler extends Handler {
 
         // zxing
         PlanarYUVLuminanceSource source = activity.getCameraManager().buildLuminanceSource(data, width, height);
+        Log.d(TAG, "width:" + width + ",height:" + height + ",newWidth:" + source.getWidth() + ",newHeight:" + source.getHeight());
         BinaryBitmap globalBitmap = new BinaryBitmap(new GlobalHistogramBinarizer(source));
         try {
             rawResult = qrCodeReader.decode(globalBitmap, hints);
@@ -99,6 +109,7 @@ final class DecodeHandler extends Handler {
         } finally {
             qrCodeReader.reset();
         }
+        // hybrid 解码
         BinaryBitmap bitmap = new BinaryBitmap(new HybridBinarizer(source));
         try {
             rawResult = qrCodeReader.decode(bitmap, hints);
@@ -145,6 +156,10 @@ final class DecodeHandler extends Handler {
                 if (rawResult != null) {
                     Bundle bundle = new Bundle();
                     bundleThumbnail(source, bundle);
+                    // 绘制点点
+                    for (ResultPoint points : rawResult.getResultPoints()) {
+                        callback.foundPossibleResultPoint(points);
+                    }
                     message.setData(bundle);
                 }
                 message.sendToTarget();

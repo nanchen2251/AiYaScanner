@@ -38,19 +38,12 @@ final class DecodeThread extends Thread {
     public static final String BARCODE_SCALED_FACTOR = "barcode_scaled_factor";
 
     private final BaseCaptureActivity activity;
-    private final Map<DecodeHintType, Object> hints;
     private Handler handler;
     private final CountDownLatch handlerInitLatch;
 
-    DecodeThread(BaseCaptureActivity activity,
-                 ResultPointCallback resultPointCallback) {
+    DecodeThread(BaseCaptureActivity activity) {
         this.activity = activity;
         handlerInitLatch = new CountDownLatch(1);
-        hints = new EnumMap<>(DecodeHintType.class);
-        hints.put(DecodeHintType.POSSIBLE_FORMATS, BarcodeFormat.QR_CODE);
-        hints.put(DecodeHintType.CHARACTER_SET, "utf-8");
-        hints.put(DecodeHintType.TRY_HARDER, Boolean.TRUE);
-        hints.put(DecodeHintType.NEED_RESULT_POINT_CALLBACK, resultPointCallback);
     }
 
     Handler getHandler() {
@@ -65,7 +58,7 @@ final class DecodeThread extends Thread {
     @Override
     public void run() {
         Looper.prepare();
-        handler = new DecodeHandler(activity, hints);
+        handler = new DecodeHandler(activity);
         handlerInitLatch.countDown();
         Looper.loop();
     }

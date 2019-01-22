@@ -321,14 +321,14 @@ public final class CameraManager {
      */
     public PlanarYUVLuminanceSource buildLuminanceSource(byte[] data, int width, int height) {
         // 直接返回整幅图像的数据，而不需要计算聚焦框的大小。
-        return new PlanarYUVLuminanceSource(data, width, height, 0, 0, width, height, false);
-//        Rect rect = getFramingRectInPreview();
-//        if (rect == null) {
-//            return null;
-//        }
-//        // Go ahead and assume it's YUV rather than die.
-//        return new PlanarYUVLuminanceSource(data, width, height, rect.left, rect.top,
-//                rect.width(), rect.height(), false);
+//        return new PlanarYUVLuminanceSource(data, width, height, 0, 0, width, height, false);
+        Rect rect = getFramingRectInPreview();
+        if (rect == null) {
+            return null;
+        }
+        // Go ahead and assume it's YUV rather than die.
+        return new PlanarYUVLuminanceSource(data, width, height, rect.left, rect.top,
+                rect.width(), rect.height(), false);
     }
 
 

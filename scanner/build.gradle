@@ -8,7 +8,9 @@ android {
         targetSdkVersion 28
         versionCode 6
         versionName "1.0.6"
-
+        ndk {
+            abiFilters "armeabi"
+        }
     }
 
     buildTypes {

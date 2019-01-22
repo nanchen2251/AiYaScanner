@@ -36,8 +36,6 @@ import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
 
-import java.util.Collection;
-import java.util.Map;
 
 /**
  * This class handles all the messaging which comprises the state machine for capture.
@@ -62,7 +60,7 @@ public final class CaptureActivityHandler extends Handler {
     public CaptureActivityHandler(BaseCaptureActivity activity,
                                   CameraManager cameraManager) {
         this.activity = activity;
-        decodeThread = new DecodeThread(activity, new ViewfinderResultPointCallback(activity.getViewfinderView()));
+        decodeThread = new DecodeThread(activity);
         decodeThread.start();
         state = State.SUCCESS;
 
