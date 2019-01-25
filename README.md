@@ -5,8 +5,11 @@ TODO：
 1. 剥离 zxing（已完成）；
 2. 优化 zxing 预览和解码（已完成）；
 3. 加入 zbar 解码（已完成）；
-4. 兼容优化；
-5. 二维码自动放大缩小
+4. 兼容优化；（部分完成）；
+5. 二维码放大缩小(已完成)；
+6. 目前解码为了兼容，是串行的，相反拖长了时间，后面会改成并行的。
+7. 自动放缩；
+8. 目前为了速度，**仅支持二维码**，后面暴露接口支持其他格式；
 
 **更多有效的优化，请大家一起来提 PR！**
 **有任何需求或者 BUG,请提 issues！**
@@ -22,6 +25,8 @@ TODO：
 ## 特点
   1、只为极速扫码而生。<br>
   2、默认只支持二维码扫描。<br>
+  3、支持双击放大缩小。<br>
+  4、支持多指放大缩小。<br>
 ## 使用方法
 #### 1、添加依赖<br>
 ##### Step 1. Add it in your root build.gradle at the end of repositories:
@@ -36,7 +41,7 @@ allprojects {
 ##### Step 2. Add the dependency
 ```java
 dependencies {
-	        implementation 'com.github.nanchen2251:AiYaScanner:1.0.5'
+	        implementation 'com.github.nanchen2251:AiYaScanner:1.0.6'
 	}
 ```
 #### 2、在Activity里面使用<br>
