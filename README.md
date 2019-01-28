@@ -41,7 +41,7 @@ allprojects {
 ##### Step 2. Add the dependency
 ```java
 dependencies {
-	        implementation 'com.github.nanchen2251:AiYaScanner:1.0.6'
+	        implementation 'com.github.nanchen2251:AiYaScanner:1.0.7'
 	}
 ```
 #### 2、在Activity里面使用<br>
