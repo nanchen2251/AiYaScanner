@@ -110,41 +110,41 @@ final class DecodeHandler extends Handler {
             qrCodeReader.reset();
         }
         // hybrid 解码
-        BinaryBitmap bitmap = new BinaryBitmap(new HybridBinarizer(source));
-        try {
-            rawResult = qrCodeReader.decode(bitmap, hints);
-            if (rawResult != null)
-                strResult = rawResult.getText();
-        } catch (ReaderException re) {
-            // continue
-        } finally {
-            qrCodeReader.reset();
-        }
-
-        // zbar 解码
-        Image barcode = new Image(width, height, "Y800");
-        barcode.setData(data);
-        Rect rect = activity.getCameraManager().getFramingRectInPreview();
-        if (rect != null) {
-            /* zbar 解码库,不需要将数据进行旋转,因此设置裁剪区域是的x为 top, y为left 设置了裁剪区域,解码速度快了近5倍左右 */
-            barcode.setCrop(rect.top, rect.left, rect.width(), rect.height()); // 设置截取区域，也就是你的扫描框在图片上的区域.
-        }
-        ImageScanner mImageScanner = new ImageScanner();
-        int result = mImageScanner.scanImage(barcode);
-        if (result != 0) {
-            SymbolSet symSet = mImageScanner.getResults();
-            for (Symbol sym : symSet) {
-                // 未能识别的格式继续遍历
-                if (sym.getType() == Symbol.NONE) {
-                    continue;
-                }
-                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.KITKAT) {
-                    strResult = new String(sym.getDataBytes(), StandardCharsets.UTF_8);
-                } else {
-                    strResult = sym.getData();
-                }
-            }
-        }
+//        BinaryBitmap bitmap = new BinaryBitmap(new HybridBinarizer(source));
+//        try {
+//            rawResult = qrCodeReader.decode(bitmap, hints);
+//            if (rawResult != null)
+//                strResult = rawResult.getText();
+//        } catch (ReaderException re) {
+//            // continue
+//        } finally {
+//            qrCodeReader.reset();
+//        }
+//
+//        // zbar 解码
+//        Image barcode = new Image(width, height, "Y800");
+//        barcode.setData(data);
+//        Rect rect = activity.getCameraManager().getFramingRectInPreview();
+//        if (rect != null) {
+//            /* zbar 解码库,不需要将数据进行旋转,因此设置裁剪区域是的x为 top, y为left 设置了裁剪区域,解码速度快了近5倍左右 */
+//            barcode.setCrop(rect.top, rect.left, rect.width(), rect.height()); // 设置截取区域，也就是你的扫描框在图片上的区域.
+//        }
+//        ImageScanner mImageScanner = new ImageScanner();
+//        int result = mImageScanner.scanImage(barcode);
+//        if (result != 0) {
+//            SymbolSet symSet = mImageScanner.getResults();
+//            for (Symbol sym : symSet) {
+//                // 未能识别的格式继续遍历
+//                if (sym.getType() == Symbol.NONE) {
+//                    continue;
+//                }
+//                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.KITKAT) {
+//                    strResult = new String(sym.getDataBytes(), StandardCharsets.UTF_8);
+//                } else {
+//                    strResult = sym.getData();
+//                }
+//            }
+//        }
 
         Handler handler = activity.getHandler();
         if (strResult != null) {
